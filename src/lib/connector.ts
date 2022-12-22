@@ -100,6 +100,7 @@ export class Web3AuthConnector extends Connector {
   }
 
   async connect(): Promise<Required<ConnectorData>> {
+    console.log("connect")
     try {
       this.emit("message", {
         type: "connecting",
@@ -181,6 +182,7 @@ export class Web3AuthConnector extends Connector {
   }
 
   async getAccount(): Promise<string> {
+    console.log("getAccount")
     const provider = new ethers.providers.Web3Provider(await this.getProvider());
     const signer = provider.getSigner();
     const account = await signer.getAddress();
@@ -188,6 +190,7 @@ export class Web3AuthConnector extends Connector {
   }
 
   async getProvider() {
+    console.log("getProvider")
     if (this.provider) {
       return this.provider;
     }
@@ -196,12 +199,14 @@ export class Web3AuthConnector extends Connector {
   }
 
   async getSigner(): Promise<Signer> {
+    console.log("getSigner")
     const provider = new ethers.providers.Web3Provider(await this.getProvider());
     const signer = provider.getSigner();
     return signer;
   }
 
   async isAuthorized() {
+    console.log("isAuthorized")
     try {
       const account = await this.getAccount();
       return !!(account && this.provider);
@@ -211,6 +216,7 @@ export class Web3AuthConnector extends Connector {
   }
 
   async getChainId(): Promise<number> {
+    console.log("getChainId")
     try {
       const provider = await this.getProvider();
       if (!provider) {
@@ -235,6 +241,7 @@ export class Web3AuthConnector extends Connector {
   }
 
   async switchChain(chainId: number) {
+    console.log("switchChain")
     try {
       const chain = this.chains.find((x) => x.id === chainId);
       if (!chain) throw new Error(`Unsupported chainId: ${chainId}`);
@@ -272,30 +279,36 @@ export class Web3AuthConnector extends Connector {
   }
 
   async disconnect(): Promise<void> {
+    console.log("disconnect")
     await this.web3AuthInstance.logout();
     this.provider = null;
   }
 
   protected onAccountsChanged(accounts: string[]): void {
+    console.log("onAccountsChanged")
     if (accounts.length === 0) this.emit("disconnect");
     else this.emit("change", { account: getAddress(accounts[0]) });
   }
 
   protected isChainUnsupported(chainId: number): boolean {
+    console.log("isChainUnsupported")
     return !this.chains.some((x) => x.id === chainId);
   }
 
   protected onChainChanged(chainId: string | number): void {
+    console.log("onChainChanged")
     const id = normalizeChainId(chainId);
     const unsupported = this.isChainUnsupported(id);
     this.emit("change", { chain: { id, unsupported } });
   }
 
   protected onDisconnect(): void {
+    console.log("onDisconnect")
     this.emit("disconnect");
   }
 
   private subscribeToLoginModalEvents(): void {
+    console.log("subscribeToLoginModalEvents")
     this.loginModal.on(LOGIN_MODAL_EVENTS.LOGIN, async (params: { adapter: WALLET_ADAPTER_TYPE; loginParams: unknown }) => {
       try {
         await this.web3AuthInstance.connectTo<unknown>(params.adapter, params.loginParams);
