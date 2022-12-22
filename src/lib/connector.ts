@@ -5,14 +5,14 @@ import {
   CHAIN_NAMESPACES,
   CustomChainConfig,
   getChainConfig,
-  SafeEventEmitterProvider,
   WALLET_ADAPTER_TYPE,
   WALLET_ADAPTERS,
 } from "@web3auth/base";
 import { Web3AuthCore } from "@web3auth/core";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import LoginModal, { getAdapterSocialLogins, LOGIN_MODAL_EVENTS, OPENLOGIN_PROVIDERS } from "@web3auth/ui";
-import { ethers, Signer } from "ethers";
+import * as zd from "@zerodevapp/sdk";
+import { Signer } from "ethers";
 import { getAddress } from "ethers/lib/utils";
 import log from "loglevel";
 
@@ -27,7 +27,7 @@ export class Web3AuthConnector extends Connector {
 
   readonly name = "web3Auth";
 
-  provider: SafeEventEmitterProvider;
+  provider: zd.ERC4337EthersProvider;
 
   web3AuthInstance?: Web3AuthCore;
 
@@ -42,7 +42,9 @@ export class Web3AuthConnector extends Connector {
   constructor(config: { chains?: Chain[]; options: Options }) {
     super(config);
     this.web3AuthOptions = config.options;
+    console.log("constructor config", config)
     const chainId = config.options.chainId ? parseInt(config.options.chainId, 16) : 1;
+    console.log("constructor chainId", chainId)
     const chainConfig = this.chains.filter((x) => x.id === chainId);
 
     const defaultChainConfig = getChainConfig(CHAIN_NAMESPACES.EIP155, config.options.chainId || "0x1");
@@ -183,8 +185,7 @@ export class Web3AuthConnector extends Connector {
 
   async getAccount(): Promise<string> {
     console.log("getAccount")
-    const provider = new ethers.providers.Web3Provider(await this.getProvider());
-    const signer = provider.getSigner();
+    const signer = await this.getSigner();
     const account = await signer.getAddress();
     return account;
   }
@@ -194,13 +195,17 @@ export class Web3AuthConnector extends Connector {
     if (this.provider) {
       return this.provider;
     }
-    this.provider = this.web3AuthInstance.provider;
+    console.log('web3auth provider', this.web3AuthInstance.provider)
+    this.provider = await zd.getProvider({
+      projectId: "b5486fa4-e3d9-450b-8428-646e757c10f6",
+      web3Provider: this.web3AuthInstance.provider,
+    });
     return this.provider;
   }
 
   async getSigner(): Promise<Signer> {
     console.log("getSigner")
-    const provider = new ethers.providers.Web3Provider(await this.getProvider());
+    const provider = await this.getProvider();
     const signer = provider.getSigner();
     return signer;
   }
@@ -218,8 +223,7 @@ export class Web3AuthConnector extends Connector {
   async getChainId(): Promise<number> {
     console.log("getChainId")
     try {
-      const provider = await this.getProvider();
-      if (!provider) {
+      if (!this.web3AuthInstance.provider) {
         const networkOptions = this.socialLoginAdapter.chainConfigProxy;
         if (typeof networkOptions === "object") {
           const chainID = networkOptions.chainId;
@@ -228,9 +232,11 @@ export class Web3AuthConnector extends Connector {
           }
         }
       } else {
-        const chainId = await provider.request({ method: "eth_chainId" });
+        const provider = await this.getProvider();
+        const chainId = provider.chainId;
+        console.log("chainId", chainId)
         if (chainId) {
-          return normalizeChainId(chainId as string);
+          return normalizeChainId(chainId);
         }
       }
       throw new Error("Chain ID is not defined");
@@ -249,28 +255,22 @@ export class Web3AuthConnector extends Connector {
       if (!provider) throw new Error("Please login first");
       // eslint-disable-next-line no-console
       console.log("chain", chain);
-      this.provider.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: `0x${chain.id.toString(16)}`,
-            chainName: chain.name,
-            rpcUrls: [chain.rpcUrls.default],
-            blockExplorerUrls: [chain.blockExplorers?.default?.url],
-            nativeCurrency: {
-              symbol: chain.nativeCurrency?.symbol || "ETH",
-            },
+      this.provider.perform("wallet_addEthereumChain", [
+        {
+          chainId: `0x${chain.id.toString(16)}`,
+          chainName: chain.name,
+          rpcUrls: [chain.rpcUrls.default],
+          blockExplorerUrls: [chain.blockExplorers?.default?.url],
+          nativeCurrency: {
+            symbol: chain.nativeCurrency?.symbol || "ETH",
           },
-        ],
-      });
-      await this.provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [
-          {
-            chainId: `0x${chain.id.toString(16)}`,
-          },
-        ],
-      });
+        },
+      ]);
+      await this.provider.perform("wallet_switchEthereumChain", [
+        {
+          chainId: `0x${chain.id.toString(16)}`,
+        },
+      ]);
       return chain;
     } catch (error) {
       log.error("Error: Cannot change chain", error);

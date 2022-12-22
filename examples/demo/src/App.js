@@ -11,12 +11,13 @@ import { rainbowWeb3AuthConnector } from "./RainbowWeb3authConnector";
 
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
+import { Token } from './Token';
 
 const { chains, provider } = configureChains(
-  [chain.mainnet, chain.polygon ],
+  [chain.polygonMumbai, chain.goerli],
   [
-    alchemyProvider({ apiKey: "7wSu45FYTMHUO4HJkHjQwX4HFkb7k9Ui"}),
-    alchemyProvider({ apiKey: "fGXusgBUDC-OPy6XI8IFRvu1i7sbWsYj"}),
+    alchemyProvider({ apiKey: "7wSu45FYTMHUO4HJkHjQwX4HFkb7k9Ui" }),
+    alchemyProvider({ apiKey: "fGXusgBUDC-OPy6XI8IFRvu1i7sbWsYj" }),
     publicProvider()
   ]
 );
@@ -51,8 +52,10 @@ export default function App() {
             alignItems: "center",
             justifyContent: "center",
             fontFamily: "sans-serif",
+            flexDirection: "column",
           }}
         >
+          <Token />
           <ConnectButton />
         </div>
       </RainbowKitProvider>

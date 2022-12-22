@@ -1,6 +1,6 @@
 import { Web3AuthConnector } from "@web3auth/web3auth-wagmi-connector";
 
-const name = "My App Name";
+const name = "Rainbow Mini Wallet";
 const iconUrl = "https://web3auth.io/docs/contents/logo-ethereum.png";
 
 export const rainbowWeb3AuthConnector = ({ chains }) => ({
@@ -15,7 +15,7 @@ export const rainbowWeb3AuthConnector = ({ chains }) => ({
         enableLogging: true,
         clientId: "YOUR_CLIENT_ID", // Get your own client id from https://dashboard.web3auth.io
         network: "cyan", // cyan, testnet, mainnet
-        chainId: chains[0].chainId,
+        chainId: chains[0].id,
         uiConfig: {
           theme: "light", // light or dark
           appLogo: iconUrl,
