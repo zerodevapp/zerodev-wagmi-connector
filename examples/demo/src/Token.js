@@ -7,7 +7,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // a react component that renders a button
 export const Token = () => {
-  const { address, isConnected, isDisconnected } = useAccount()
+  const { address, isConnected } = useAccount()
   // get signer from wagmi useSigner
   const { data: signer } = useSigner()
 
@@ -20,7 +20,7 @@ export const Token = () => {
   })
   const { write: claim, isLoading, isSuccess } = useContractWrite(config)
 
-  const { data: balance, isError, isFetching, refetch } = useContractRead({
+  const { data: balance, isFetching, refetch } = useContractRead({
     addressOrName: contractAddress.Token,
     contractInterface: TokenArtifact.abi,
     functionName: 'balanceOf',
