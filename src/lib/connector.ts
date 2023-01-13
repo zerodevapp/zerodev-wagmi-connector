@@ -197,7 +197,7 @@ export class Web3AuthConnector extends Connector {
     }
     console.log('web3auth provider', this.web3AuthInstance.provider)
     this.provider = await zd.getProvider({
-      projectId: "b5486fa4-e3d9-450b-8428-646e757c10f6",
+      projectId: "699e054f-998e-4419-9124-93cd5b2c8b90",
       web3Provider: this.web3AuthInstance.provider,
     });
     return this.provider;

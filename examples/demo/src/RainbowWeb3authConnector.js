@@ -1,7 +1,7 @@
 import { Web3AuthConnector } from "@web3auth/web3auth-wagmi-connector";
 
-const name = "Rainbow Mini Wallet";
-const iconUrl = "https://web3auth.io/docs/contents/logo-ethereum.png";
+const name = "Sound Wallet";
+const iconUrl = "https://pbs.twimg.com/profile_images/1458560356322721792/59rzZQP0_400x400.jpg";
 
 export const rainbowWeb3AuthConnector = ({ chains }) => ({
   id: "web3auth",
